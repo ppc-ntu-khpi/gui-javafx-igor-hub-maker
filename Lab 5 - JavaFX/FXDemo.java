@@ -1,8 +1,12 @@
-package com.mybank.gui;
+package com.mycompany.fxdemo;
 
+import com.mybank.data.DataSource;
 import com.mybank.domain.Bank;
 import com.mybank.domain.CheckingAccount;
+import com.mybank.domain.Customer;
 import com.mybank.domain.SavingsAccount;
+import java.io.IOException;
+import java.util.Locale;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -74,7 +78,7 @@ public class FXDemo extends Application {
         details = new Text("Account:\t\t#0\nAcc Type:\tChecking\nBalance:\t\t$0000");
         details.setFont(Font.font("Arial", FontWeight.NORMAL, 14));
         vbox.getChildren().add(details);
-
+       
         return vbox;
     }
 
@@ -95,7 +99,30 @@ public class FXDemo extends Application {
 
         Button buttonShow = new Button("Show");
         buttonShow.setPrefSize(100, 20);
+        Button buttonReport = new Button("Report");
+        buttonReport.setPrefSize(100, 20);
 
+        buttonReport.setOnAction(new EventHandler<ActionEvent>() {
+
+            @Override
+            public void handle(ActionEvent event) {
+                String custInfo = "";
+                for ( int i = 0; i < Bank.getNumberOfCustomers(); i++ ) {
+                    Customer current = Bank.getCustomer(i);
+                    String accType = current.getAccount(0)instanceof CheckingAccount?"Checking":"Savings";                
+                    custInfo+=current.getLastName()+", "+
+                           current.getFirstName()+":"+
+                           "\nAcc Type: "+accType+
+                           "\nBalance: "+current.getAccount(0).getBalance()+"\n\n";
+                }
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Report");
+                alert.setHeaderText(null);
+                alert.setContentText(custInfo);
+                alert.showAndWait();   
+            }
+        });
+        
         buttonShow.setOnAction(new EventHandler<ActionEvent>() {
 
             @Override
@@ -118,7 +145,8 @@ public class FXDemo extends Application {
             }
         });
 
-        hbox.getChildren().addAll(clients, buttonShow);
+
+        hbox.getChildren().addAll(clients, buttonShow, buttonReport);
 
         return hbox;
     }
@@ -174,13 +202,10 @@ public class FXDemo extends Application {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
-        Bank.addCustomer("John", "Doe");
-        Bank.getCustomer(0).addAccount(new SavingsAccount(100, 2));
-        Bank.addCustomer("Fox", "Mulder");
-        Bank.getCustomer(1).addAccount(new CheckingAccount(1000, 500));
-        Bank.addCustomer("Dana", "Scully");
-        Bank.getCustomer(2).addAccount(new CheckingAccount(1060));
+    public static void main(String[] args) throws IOException {
+        Locale.setDefault(new Locale("en", "us"));
+
+        new DataSource("./data/test.dat").loadData();
 
         launch(args);
     }
